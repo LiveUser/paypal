@@ -1,6 +1,7 @@
 name: unofficial_paypal_sdk
 description: Unofficial pay pal SDK
 version: 0.0.2+3
+repository: https://github.com/LiveUser/paypal
 
 environment:
   sdk: '>=2.16.2 <3.0.0'
