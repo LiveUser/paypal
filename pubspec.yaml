@@ -1,15 +1,13 @@
-name: paypal
-description: A sample command-line application.
-version: 1.0.0
-# homepage: https://www.example.com
+name: unofficial_paypal_sdk
+description: Unofficial pay pal SDK
+version: 0.0.2+3
 
 environment:
   sdk: '>=2.16.2 <3.0.0'
 
 dependencies:
-  sexy_api_client: ^0.0.5+5
-  power_plant: ^1.0.0+1
+  sexy_api_client: ^0.0.6+6
   
-
 dev_dependencies:
   test: ^1.16.0
+  power_plant: ^1.0.2+3

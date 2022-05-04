@@ -1,4 +1,4 @@
-library paypal;
+library unofficial_paypal_sdk;
 
 import 'package:sexy_api_client/sexy_api_client.dart';
 import 'parsing.dart';
@@ -43,6 +43,17 @@ class PayPalProductLink{
   final String href;
   final String rel;
   final String method;
+  static List<PayPalProductLink> parseLinks(List<Map<String,dynamic>> links){
+    List<PayPalProductLink> parsedLinks = [];
+    for(Map<String,dynamic> link in links){
+      parsedLinks.add(PayPalProductLink(
+        href: link["href"], 
+        method: link["method"],
+        rel: link["rel"],
+      ));
+    }
+    return parsedLinks;
+  }
 }
 class PayPalProduct{
   PayPalProduct({
@@ -51,12 +62,14 @@ class PayPalProduct{
     required this.description,
     required this.create_time,
     required this.links,
+    required this.category,
   });
   final String id;
   final String name;
-  final String description;
+  final String? description;
   final String create_time;
   final List<PayPalProductLink> links;
+  final String? category;
   static PayPalProduct parse(Map<String,dynamic> product){
     List<PayPalProductLink> links = [];
     for(Map<String,dynamic> link in product["links"]){
@@ -72,6 +85,7 @@ class PayPalProduct{
       description: product["description"], 
       create_time: product["create_time"], 
       links: links,
+      category: product["category"],
     );
   }
 }
@@ -107,8 +121,173 @@ class CreatedPayPalProduct{
   final String status;
   final List<PayPalProductLink> links;
 }
+class PayPalBillingPlan{
+  PayPalBillingPlan({
+    required this.id,
+    required this.product_id,
+    required this.status,
+    required this.name,
+    required this.description,
+    required this.create_time,
+    required this.links,
+  });
+  final String id;
+  final String product_id;
+  final String status;
+  final String name;
+  final String description;
+  final String create_time;
+  final List<PayPalProductLink> links;
+}
+class PayPalPlanId{
+  PayPalPlanId({
+    required this.plan_id,
+  });
+  final String plan_id;
+}
+class ListOfPayPalPlans{
+  ListOfPayPalPlans({
+    required this.total_items,
+    required this.total_pages,
+    required this.plans,
+  });
+  final int total_items;
+  final int total_pages;
+  final List<PayPalBillingPlan> plans;
+}
+class Frequency{
+  Frequency({
+    required this.interval_count,
+    required this.interval_unit,
+  });
+  ///The possible values are:
+  ///DAY. A daily billing cycle.
+  ///WEEK. A weekly billing cycle.
+  ///MONTH. A monthly billing cycle.
+  ///YEAR. A yearly billing cycle.
+  final String interval_unit;
+  ///The number of intervals after which a subscriber is billed. For example, if the interval_unit is DAY with an interval_count of 2, the subscription is billed once every two days. The following table lists the maximum allowed values for the interval_count for each interval_unit:
+  ///https://developer.paypal.com/docs/api/subscriptions/v1/#definition-frequency
+  final interval_count;
+}
+class PricingScheme{
+  PricingScheme({
+    required this.currency_code,
+    required this.value,
+  });
+  ///Amount
+  final String value;
+  final String currency_code;
+}
+class BillingCycle{
+  BillingCycle({
+    required this.frequency,
+    required this.pricing_scheme,
+    required this.sequence,
+    required this.tenure_type,
+    required this.total_cycles,
+  });
+  PricingScheme pricing_scheme;
+  Frequency frequency;
+  TenureType tenure_type;
+  ///The order in which this cycle is to run among other billing cycles. For example, a trial billing cycle has a sequence of 1 while a regular billing cycle has a sequence of 2, so that trial cycle runs before the regular cycle.
+  ///Minimum value: 1.
+  ///Maximum value: 99.
+  int sequence;
+  ///The number of times this billing cycle gets executed. Trial billing cycles can only be executed a finite number of times (value between 1 and 999 for total_cycles). Regular billing cycles can be executed infinite times (value of 0 for total_cycles) or a finite number of times (value between 1 and 999 for total_cycles).
+  ///Maximum value: 999.
+  int total_cycles;
+}
+class SetupFee{
+  SetupFee({
+    required this.value,
+    required this.currency_code,
+  });
+  ///Ammount
+  String value;
+  ///Something like USD,
+  String currency_code;
+}
+class PaymentPreferences{
+  PaymentPreferences({
+    required this.auto_bill_outstanding,
+    required this.setup_fee,
+    required this.setup_fee_failure_action,
+    required this.payment_failure_threshold,
+  });
+  ///Indicates whether to automatically bill the outstanding amount in the next billing cycle.
+  final bool auto_bill_outstanding;
+  ///The initial set-up fee for the service.
+  final SetupFee setup_fee;
+  ///The action to take on the subscription if the initial payment for the setup fails.
+  final SetupFeeFailureAction setup_fee_failure_action;
+  ///The maximum number of payment failures before a subscription is suspended. For example, if payment_failure_threshold is 2, the subscription automatically updates to the SUSPEND state if two consecutive payments fail.
+  ///Maximum value: 999.
+  final payment_failure_threshold;
+}
+class Taxes{
+  Taxes({
+    required this.percentage,
+    required this.inclusive,
+  });
+  ///The tax percentage on the billing amount.
+  final String percentage;
+  ///Indicates whether the tax was already included in the billing amount.
+  final bool inclusive;
+}
+class SubscriptionPlan{
+  SubscriptionPlan({
+    required this.id,
+    required this.product_id,
+    required this.name,
+    required this.status,
+    required this.description,
+    required this.usage_type,
+    required this.create_time,
+    required this.links,
+  });
+  final String id;
+  final String product_id;
+  final String name;
+  final String status;
+  final String description;
+  final String usage_type;
+  final String create_time;
+  final List<PayPalProductLink> links;
+  static SubscriptionPlan parse(String json){
+    Map<String,dynamic> parsedJSON = jsonDecode(json);
+    List<PayPalProductLink> links = [];
+    for(Map<String,dynamic> link in parsedJSON["links"]){
+      links.add(PayPalProductLink(
+        href: link["href"],
+        method: link["method"],
+        rel: link["rel"],
+      ));
+    }
+    return SubscriptionPlan(
+      id: parsedJSON["id"], 
+      product_id: parsedJSON["product_id"], 
+      name: parsedJSON["name"], 
+      status: parsedJSON["status"], 
+      description: parsedJSON["description"], 
+      usage_type: parsedJSON["usage_type"], 
+      create_time: parsedJSON["create_time"], 
+      links: links,
+    );
+  }
+}
 //enums
 //----------------------------------------------------------------------
+enum SetupFeeFailureAction{
+  ///Continues the subscription if the initial payment for the setup fails.
+  CONTINUE,
+  ///Cancels the subscription if the initial payment for the setup fails.
+  CANCEL,
+}
+enum TenureType{
+  REGULAR,
+  TRIAL,
+}
 enum HttpStatusCodes{
   ///The request succeeded.
   ok200,
@@ -578,6 +757,26 @@ String _enumToString(Enum enumerated){
   String stringyfied = enumerated.toString();
   return stringyfied.substring(stringyfied.lastIndexOf(".") + 1);
 }
+enum UpdateProductOperation{
+  add,
+  replace,
+  remove,
+}
+enum UpdateProductAttribute{
+  description,
+  category,
+}
+enum UpdateSubscriptionPlanOperation{
+  replace,
+}
+class UpdateSubscriptionPlanAttribute{
+  static const String description = "description";
+  static const String payment_preferences_auto_bill_outstanding = "payment_preferences.auto_bill_outstanding";
+  static const String taxes_percentage = "taxes.percentage";
+  static const String payment_preferences_payment_failure_threshold = "payment_preferences.payment_failure_threshold";
+  static const String payment_preferences_setup_fee = "payment_preferences.setup_fee";
+  static const String payment_preferences_setup_fee_failure_action = "payment_preferences.setup_fee_failure_action";
+}
 //API SDK Functions
 //----------------------------------------------------------------------
 class PayPal{
@@ -614,7 +813,8 @@ class PayPal{
     accessToken = PayPalAccessToken.parse(_parseResponse(response));
     return accessToken;
   }
-  //TODO: Get products https://developer.paypal.com/docs/api/catalog-products/v1/
+  //Catalog Products API
+  //Get products https://developer.paypal.com/docs/api/catalog-products/v1/
   Future<PayPalProductsList> listProducts({
     ///The number of items to return in the response.
     ///Minimum value: 1.
@@ -641,9 +841,13 @@ class PayPal{
         "Content-Type" : "application/json",
       },
     );
-    return PayPalProductsList.parse(_parseResponse(response));
+    try{
+      return PayPalProductsList.parse(_parseResponse(response));
+    }catch(error){
+      throw response;
+    }
   }
-  //TODO: Create product
+  //Create product
   Future<PayPalProduct> createProduct({
     ///The preferred server response upon successful completion of the request. Value is:
     ///return=minimal. The server returns a minimal response to optimize communication between the API caller and the server. A minimal response includes the id, status and HATEOAS links.
@@ -664,26 +868,27 @@ class PayPal{
     ///Maximum length: 256.
     required String description,
     ///The product type. Indicates whether the product is physical or tangible goods, or a service.
-    required ProductType productType,
+    //required ProductType productType,
     ///The product category.
     required String category,
     ///The image URL for the product.
     ///Minimum length: 1
     ///Maximum length: 2000.
-    required String image_url,
+    //required String image_url,
     ///The home page URL for the product.
     ///Minimum length: 1
     ///Maximum length: 2000.
-    required String home_url,
+    //required String home_url,
   })async{
     Map<String,dynamic> parameters = {
-      /*"id" : id,*/
+      "id" : id,
       "name" : name,
-      /*"description" : description,
-      "type" : _enumToString(productType),
+      //Adding the properties below throws an error
+      "description" : description,
+      //"type" : _enumToString(productType),
       "category" : category,
-      "image_url" : image_url,
-      "home_url" : home_url,*/
+      //"image_url" : image_url,
+      //"home_url" : home_url,
     };
     String response = await SexyAPI(
       url: _url,
@@ -699,5 +904,292 @@ class PayPal{
       body: jsonEncode(parameters),
     );
     return PayPalProduct.parse(_parseResponse(response));
+  }
+  //Update product
+  Future<void> updateProduct({
+    required String product_id,
+    required UpdateProductOperation operation,
+    required UpdateProductAttribute attributeToModify,
+    Object newValue = "",
+  })async{
+    List<Map<String,dynamic>> parameters = [{
+      "op" : _enumToString(operation),
+      "path" : "/"+_enumToString(attributeToModify),
+      "value" : newValue,
+    }];
+    await SexyAPI(
+      url: _url, 
+      path: "/v1/catalogs/products/$product_id",
+      parameters: {},
+    ).patch(
+      headers: {
+        "Authorization" : "Bearer ${accessToken.access_token}",
+        "Content-Type" : "application/json",
+      },
+      body: jsonEncode(parameters),
+    );
+  }
+  //Show product details
+  Future<PayPalProduct> showProductDetails({
+    required String product_id,
+  })async{
+    String response = await SexyAPI(
+      url: _url,
+      path: "/v1/catalogs/products/$product_id",
+      parameters: {},
+    ).get(
+      headers: {
+        "Authorization" : "Bearer ${accessToken.access_token}",
+        "Content-Type" : "application/json",
+      }
+    );
+    try{
+      return PayPalProduct.parse(_parseResponse(response));
+    }catch(err){
+      throw response;
+    }
+  }
+  //TODO: Subscriptions API
+  //https://developer.paypal.com/docs/api/subscriptions/v1/
+  Future<ListOfPayPalPlans> listPlans({
+    ///Filters the response by a Product ID. Minimum length: 6. Maximum length: 50.
+    String? product_id,
+    ///Filters the response by list of plan IDs. Filter supports upto 10 plan IDs. Minimum value: 3. Maximum value: 270.
+    List<PayPalPlanId>? plan_ids,
+    ///The number of items to return in the response. Minimum value: 1. Maximum value: 20.
+    String page_size = "20",
+    ///A non-zero integer which is the start index of the entire list of items to return in the response. The combination of page=1 and page_size=20 returns the first 20 items. The combination of page=2 and page_size=20 returns the next 20 items. Minimum value: 1. Maximum value: 100000.
+    String page = "1",
+  })async{
+    List<PayPalBillingPlan> billingPlans = [];
+    Map<String,dynamic> parameters = {};
+    if(product_id != null){
+      parameters.addAll({
+        "product_id" : product_id,
+        "page_size" : page_size,
+        "page" : page,
+        "total_required" : true,
+      });
+    }
+    if(plan_ids != null){
+      List<String> planIds = [];
+      for(PayPalPlanId planId in plan_ids){
+        planIds.add(planId.plan_id);
+      }
+      parameters.addAll({
+        "plan_ids" : planIds,
+      });
+    }
+    String response = await SexyAPI(
+      url: _url,
+      path: "/v1/billing/plans",
+      parameters: parameters,
+    ).get(
+      headers: {
+        "Authorization" : "Bearer ${accessToken.access_token}",
+        "Content-Type" : "application/json",
+      },
+    );
+    Map<String,dynamic> parsedJSON = _parseResponse(response);
+    for(Map<String,dynamic> plan in parsedJSON["plans"]){
+      //Parse links
+      List<PayPalProductLink> links = PayPalProductLink.parseLinks(parsedJSON["links"].cast<Map<String,dynamic>>());
+      billingPlans.add(PayPalBillingPlan(
+          id: plan["id"], 
+          product_id: plan["product_id"], 
+          status: plan["status"], 
+          name: plan["name"],
+          description: plan["description"], 
+          create_time: plan["create_time"], 
+          links: links,
+        ),
+      );
+    }
+    //Parse PayPal billing plans
+    try{
+      return ListOfPayPalPlans(
+        total_items: parsedJSON["total_items"] ?? 0, 
+        total_pages: parsedJSON["total_pages"] ?? 0, 
+        plans: billingPlans,
+      );
+    }catch(err){
+      throw response;
+    }
+  }
+  //Create Plan
+  Future<SubscriptionPlan> createPlan({
+    ///The server stores keys for 72 hours.
+    required String payPalRequestId,
+    ///The ID of the product.
+    ///Minimum length: 6.
+    ///Maximum length: 50.
+    required String product_id,
+    ///The plan name.
+    ///Minimum length: 1.
+    ///Maximum length: 127.
+    required String name,
+    ///The detailed description of the plan.
+    ///Minimum length: 1.
+    ///Maximum length: 127.
+    required String description,
+    ///The initial state of the plan. Allowed input values are CREATED and ACTIVE.
+    ///The possible values are:
+    ///CREATED. The plan was created. You cannot create subscriptions for a plan in this state.
+    ///INACTIVE. The plan is inactive.
+    ///ACTIVE. The plan is active. You can only create subscriptions for a plan in this state.
+    String status = "ACTIVE",
+    Prefer prefer = Prefer.minimal,
+    required List<BillingCycle> billingCycles,
+    required PaymentPreferences paymentPreferences,
+    required Taxes taxes,
+    ///Indicates whether you can subscribe to this plan by providing a quantity for the goods or service.
+    required bool quantity_supported,
+  })async{
+    //Parse billing cycles
+    List<Map<String,dynamic>> allBillingCycles = [];
+    for(BillingCycle billingCycle in billingCycles){
+      allBillingCycles.add({
+          "frequency": {
+            "interval_unit": billingCycle.frequency.interval_unit,
+            "interval_count": billingCycle.frequency.interval_count,
+          },
+          "tenure_type": _enumToString(billingCycle.tenure_type),
+          "sequence": billingCycle.sequence,
+          "total_cycles": billingCycle.total_cycles,
+          "pricing_scheme": {
+            "fixed_price": {
+              "value": billingCycle.pricing_scheme.value,
+              "currency_code": billingCycle.pricing_scheme.currency_code,
+            }
+          }
+        },
+      );
+    }
+    Map<String,dynamic> parameters = {
+      "product_id": product_id,
+      "name": name,
+      "description": description,
+      "status": "ACTIVE",
+      "billing_cycles": allBillingCycles,
+      "payment_preferences": {
+        "auto_bill_outstanding": paymentPreferences.auto_bill_outstanding,
+        "setup_fee": {
+          "value": paymentPreferences.setup_fee.value,
+          "currency_code": paymentPreferences.setup_fee.currency_code,
+        },
+        "setup_fee_failure_action": _enumToString(paymentPreferences.setup_fee_failure_action),
+        "payment_failure_threshold": paymentPreferences.payment_failure_threshold,
+      },
+      "taxes": {
+        "percentage": taxes.percentage,
+        "inclusive": taxes.inclusive,
+      }
+    };
+    String response = await SexyAPI(
+      url: _url,
+      parameters: {},
+      path: "/v1/billing/plans",
+    ).post(
+      headers: {
+        "Authorization" : "Bearer ${accessToken.access_token}",
+        "Content-Type" : "application/json",
+        "Prefer" : "return=${_enumToString(prefer)}",
+        "PayPal-Request-Id" : payPalRequestId,
+      },
+      body: jsonEncode(parameters),
+    );
+    try{
+      //Parse response
+      return SubscriptionPlan.parse(response);
+    }catch(err){
+      throw response;
+    }
+  }
+  Future<void> updatePlan({
+    ///The ID of the plan.
+    required String id,
+    required UpdateSubscriptionPlanOperation operation,
+    required String attributeToModify,
+    required Object newValue,
+  })async{
+    List<Map<String,dynamic>> parameters = [
+      {
+        "op": _enumToString(operation),
+        "path": "/"+attributeToModify.replaceFirst(".", "/"),
+        "value": newValue,
+      }
+    ];
+    String response = await SexyAPI(
+      url: _url,
+      parameters: {},
+      path: "/v1/billing/plans/$id",
+    ).patch(
+      headers: {
+        "Authorization" : "Bearer ${accessToken.access_token}",
+        "Content-Type" : "application/json",
+      },
+      body: jsonEncode(parameters),
+    );
+    if(response.isNotEmpty){
+      throw response;
+    }
+  }
+  //Show plan details
+  Future<SubscriptionPlan> showPlanDetails({
+    required String id,
+  })async{
+    String response = await SexyAPI(
+      url: _url,
+      path: "/v1/billing/plans/$id",
+      parameters: {}
+    ).get(
+      headers: {
+        "Authorization" : "Bearer ${accessToken.access_token}",
+        "Content-Type" : "application/json",
+      },
+    );
+    try{
+      return SubscriptionPlan.parse(response);
+    }catch(err){
+      throw response;
+    }
+  }
+  //TODO: Activate plan
+  Future<void> activatePlan({
+    required String id,
+  })async{
+    String response = await SexyAPI(
+      url: _url, 
+      parameters: {},
+      path: "/v1/billing/plans/$id/activate",
+    ).post(
+      headers: {
+        "Authorization" : "Bearer ${accessToken.access_token}",
+        "Content-Type" : "application/json",
+      },
+      body: null,
+    );
+    if(response.isNotEmpty){
+      throw response;
+    }
+  }
+  //TODO: Deactivate plan
+  Future<void> deactivatePlan({
+    required String id,
+  })async{
+    String response = await SexyAPI(
+      url: _url, 
+      parameters: {},
+      path: "/v1/billing/plans/$id/deactivate",
+    ).post(
+      headers: {
+        "Authorization" : "Bearer ${accessToken.access_token}",
+        "Content-Type" : "application/json",
+      },
+      body: null,
+    );
+    if(response.isNotEmpty){
+      throw response;
+    }
   }
 }
