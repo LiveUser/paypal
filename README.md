@@ -8,7 +8,7 @@ Hecho en 🇵🇷 por Radamés J. Valentín Reyes
 import 'package:unofficial_paypal_sdk/unofficial_paypal_sdk.dart';
 ~~~
 --------------------------------------------------------
-# Initiate an instance of PayPay
+# Initiate an instance of Pay Pal
 Uses the client ID and client secret to fetch an access token. init() Must be called before any other function. Tokens expire so this function has to be called again before expirations to avoid errors when performing API calls.
 ~~~dart
 PayPal payPal = PayPal(
@@ -141,9 +141,14 @@ ListOfPayPalPlans allPlans = await payPal.listPlans();
 await payPal.deactivatePlan(id: allPlans.plans.first.id);
 ~~~
 
-# Payouts API
+# Invoices API
 -------------------------------------------------------------------
-
+## Generate invoice number
+~~~dart
+import 'package:power_plant/power_plant.dart';//A token/alphanumeric combination generator
+String invoice_number = uniqueAlphanumeric(tokenLength: 25);
+String generatedInvoiceNumber = await payPal.generateInvoiceNumber(invoice_number: invoice_number);
+~~~
 --------------------------------------------------------
 
 ## Contribute/donate by tapping on the Pay Pal logo/image
@@ -249,4 +254,5 @@ print(createdSubscription.name);
 - https://developer.paypal.com/docs/api/catalog-products/v1/
 - https://www.postman.com/anthonylacitelp/workspace/paypal-payment-and-subscription/request/16680306-8df7d744-8f42-4385-96ee-5b1f5407246a
 - https://developer.paypal.com/docs/api/subscriptions/v1/
-- 
+- https://developer.paypal.com/docs/api/invoicing/v2/
+- https://developer.paypal.com/docs/api/invoicing/v2/#definition-item

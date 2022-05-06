@@ -39,7 +39,7 @@ void main() async{
     print(updatedProduct.category);
   });
   test("Get products list", ()async{
-    PayPalProductsList productsList = await payPal.listProducts();
+    HATEOASLink productsList = await payPal.listProducts();
     print(productsList.products);
   });
   test("Pay Pal list Subscription test", ()async{
@@ -50,10 +50,10 @@ void main() async{
   //---------------------------------------------------------------------------------------------
   test("Create subscription", ()async{
     String id = uniqueAlphanumeric(tokenLength: 30);
-    PayPalProductsList productsList = await payPal.listProducts();
+    HATEOASLink productsList = await payPal.listProducts();
     SubscriptionPlan createdSubscription = await payPal.createPlan(
       payPalRequestId: id, 
-      product_id: productsList.products.first.id, 
+      product_id: productsList.products.first.id,
       name: "A test subscription", 
       description: "Just testing the API", 
       billingCycles: [
@@ -122,5 +122,10 @@ void main() async{
     await payPal.activatePlan(id: allPlans.plans.first.id);
     planWithDetails = await payPal.showPlanDetails(id: allPlans.plans.first.id);
     print(planWithDetails.status);
+  });
+  test("Invoice functionality", ()async{
+    String invoice_number = uniqueAlphanumeric(tokenLength: 25);
+    String generatedInvoiceNumber = await payPal.generateInvoiceNumber(invoice_number: invoice_number);
+    print(generatedInvoiceNumber);
   });
 }

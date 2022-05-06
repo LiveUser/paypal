@@ -89,8 +89,8 @@ class PayPalProduct{
     );
   }
 }
-class PayPalProductsList{
-  PayPalProductsList({
+class HATEOASLink{
+  HATEOASLink({
     required this.total_items,
     required this.total_pages,
     required this.products,
@@ -98,13 +98,13 @@ class PayPalProductsList{
   final int total_items;
   final int total_pages;
   final List<PayPalProduct> products;
-  static PayPalProductsList parse(Map<String,dynamic> parsedJSON){
+  static HATEOASLink parse(Map<String,dynamic> parsedJSON){
     List<PayPalProduct> products = [];
     //Parse products
     for(Map<String,dynamic> product in parsedJSON["products"]){
       products.add(PayPalProduct.parse(product));
     }
-    return PayPalProductsList(
+    return HATEOASLink(
       total_items: parsedJSON["total_items"], 
       total_pages: parsedJSON["total_pages"], 
       products: products,
@@ -276,8 +276,469 @@ class SubscriptionPlan{
     );
   }
 }
+class InvoiceDetails{
+  InvoiceDetails({
+    required this.reference,
+    required this.currency_code,
+    required this.note,
+    required this.terms_and_conditions,
+     required this.memo,
+     required this.attachments,
+  });
+  ///The reference data. Includes a post office (PO) number.
+  ///Maximum length: 120.
+  final String reference;
+  ///The three-character ISO-4217 currency code that identifies the currency.
+  ///Minimum length: 3.
+  ///Maximum length: 3.
+  final String currency_code;
+  ///A note to the invoice recipient. Also appears on the invoice notification email.
+  ///Maximum length: 4000.
+  final String note;
+  ///The general terms of the invoice. Can include return or cancellation policy and other terms and conditions.
+  ///Maximum length: 4000.
+  final String terms_and_conditions;
+  ///A private bookkeeping memo for the user.
+  ///Maximum length: 500.
+  final String memo;
+  ///An array of PayPal IDs for the files that are attached to an invoice.
+  final List<String> attachments;
+}
+class PhoneDetail{
+  PhoneDetail({
+    required this.country_code,
+    required this.national_number,
+    required this.extension_number,
+    required this.phone_type,
+  });
+  ///The country calling code (CC), in its canonical international E.164 numbering plan format. The combined length of the CC and the national number must not be greater than 15 digits. The national number consists of a national destination code (NDC) and subscriber number (SN).
+  ///Minimum length: 1.
+  ///Maximum length: 3.
+  ///Pattern: ^[0-9]{1,3}?$.
+  final String country_code;
+  ///The national number, in its canonical international E.164 numbering plan format. The combined length of the country calling code (CC) and the national number must not be greater than 15 digits. The national number consists of a national destination code (NDC) and subscriber number (SN).
+  ///Minimum length: 1.
+  ///Maximum length: 14.
+  ///Pattern: ^[0-9]{1,14}?$.
+  final String national_number;
+  ///The extension number.
+  ///Minimum length: 1.
+  ///Maximum length: 15.
+  ///Pattern: ^[0-9]{1,15}?$.
+  final String extension_number;
+  ///The phone type.
+  final PhoneType phone_type;
+}
+class Invoicer{
+  Invoicer({
+    required this.email_address,
+    required this.phones,
+    required this.website,
+    required this.tax_id,
+    required this.additional_notes,
+    required this.logo_url,
+  });
+  ///The invoicer email address, which must be listed in the user's PayPal profile. If you omit this value, notifications are sent from and to the primary email address but do not appear on the invoice.
+  ///Minimum length: 3.
+  ///Maximum length: 254.
+  ///Pattern: ^.+@[^"\-].+$.
+  final String email_address;
+  ///An array of invoicer's phone numbers. The invoicer can choose to hide the phone number on the invoice.
+  final List<PhoneDetail> phones;
+  ///The invoicer's website.
+  ///Maximum length: 2048.
+  final String website;
+  ///The invoicer's tax ID.
+  ///Maximum length: 100.
+  final String tax_id;
+  ///Any additional information. Includes business hours.
+  ///Maximum length: 400.
+  final String additional_notes;
+  ///The full URL to an external logo image. The logo image must not be larger than 250 pixels wide by 90 pixels high.
+  ///Maximum length: 2000.
+  final String logo_url;
+}
+class BillingInfo{
+  BillingInfo({
+    required this.email_address,
+    required this.phones,
+    required this.additional_info,
+    required this.language,
+  });
+  final String email_address;
+  final List<PhoneDetail> phones;
+  ///Any additional information about the recipient.
+  ///Maximum length: 40.
+  final String additional_info;
+  ///The language in which to show the invoice recipient's email message. Used only when the recipient does not have a PayPal account. If you omit the language and the recipient does not have a PayPal account, the email message is sent in the language of the merchant's PayPal account.
+  ///Minimum length: 2.
+  ///Maximum length: 10.
+  ///Pattern: ^[a-z]{2}(?:-[A-Z][a-z]{3})?(?:-(?:[A-Z]{2}))?$.
+  final String language;
+}
+//https://developer.paypal.com/docs/api/invoicing/v2/#definition-name
+class Name{
+  Name({
+    required this.prefix,
+    required this.given_name,
+    required this.surname,
+    required this.middle_name,
+    required this.suffix,
+    required this.full_name,
+  });
+  ///The prefix, or title, to the party's name.
+  ///Maximum length: 140.
+  final String prefix;
+  ///When the party is a person, the party's given, or first, name.
+  ///Maximum length: 140.
+  final String given_name;
+  ///When the party is a person, the party's surname or family name. Also known as the last name. Required when the party is a person. Use also to store multiple surnames including the matronymic, or mother's, surname.
+  ///Maximum length: 140.
+  final String surname;
+  ///When the party is a person, the party's middle name. Use also to store multiple middle names including the patronymic, or father's, middle name.
+  ///Maximum length: 140.
+  final String middle_name;
+  ///The suffix for the party's name.
+  ///Maximum length: 140.
+  final String suffix;
+  ///When the party is a person, the party's full name.
+  ///Maximum length: 300.
+  final String full_name;
+}
+class AddressPortable{
+  AddressPortable({
+    required this.address_line_1,
+    required this.address_line_2,
+    required this.address_line_3,
+    required this.admin_area_1,
+    required this.admin_area_2,
+    required this.admin_area_3,
+    required this.admin_area_4,
+    required this.address_details,
+    required this.country_code, 
+    required this.postal_code,
+  });
+  ///The first line of the address. For example, number or street. For example, 173 Drury Lane. Required for data entry and compliance and risk checks. Must contain the full address.
+  ///Maximum length: 300.
+  final String address_line_1;
+  ///The second line of the address. For example, suite or apartment number.
+  ///Maximum length: 300.
+  final String address_line_2;
+  ///The third line of the address, if needed. For example, a street complement for Brazil, direction text, such as next to Walmart, or a landmark in an Indian address.
+  ///Maximum length: 100.
+  final String address_line_3;
+  ///The neighborhood, ward, or district. Smaller than admin_area_level_3 or sub_locality. Value is:
+  ///The postal sorting code for Guernsey and many French territories, such as French Guiana.
+  ///The fine-grained administrative levels in China.
+  ///
+  ///Maximum length: 100.
+  final String admin_area_4;
+  ///A sub-locality, suburb, neighborhood, or district. Smaller than admin_area_level_2. Value is:
+  ///Brazil. Suburb, bairro, or neighborhood.
+  ///India. Sub-locality or district. Street name information is not always available but a sub-locality or district can be a very small area.
+  ///
+  ///Maximum length: 100.
+  final String admin_area_3;
+  ///A city, town, or village. Smaller than admin_area_level_1.
+  ///Maximum length: 120.
+  final String admin_area_2;
+  ///The highest level sub-division in a country, which is usually a province, state, or ISO-3166-2 subdivision. Format for postal delivery. For example, CA and not California. Value, by country, is:
+  ///UK. A county.
+  ///US. A state.
+  ///Canada. A province.
+  ///Japan. A prefecture.
+  ///Switzerland. A kanton.
+  ///
+  ///Maximum length: 300.
+  final String admin_area_1;
+  ///The postal code, which is the zip code or equivalent. Typically required for countries with a postal code or an equivalent. See postal code.
+  ///Maximum length: 60.
+  final String postal_code;
+  ///The two-character ISO 3166-1 code that identifies the country or region.
+  ///Minimum length: 2.
+  ///Note: The country code for Great Britain is GB and not UK as used in the top-level domain names for that country. Use the C2 country code for China worldwide for comparable uncontrolled price (CUP) method, bank card, and cross-border transactions.
+  ///Maximum length: 2.
+  ///
+  ///Pattern: ^([A-Z]{2}|C2)$.
+  final String country_code;
+  ///The non-portable additional address details that are sometimes needed for compliance, risk, or other scenarios where fine-grain address information might be needed. Not portable with common third party and open source. Redundant with core fields.
+  ///For example, address_portable.address_line_1 is usually a combination of address_details.street_number, street_name, and street_type.
+  final String address_details;
+}
+class ContactInformation{
+  ContactInformation({
+    required this.business_name,
+    required this.name,
+    required this.address,
+  });
+  ///Required. The business name of the party.
+  ///Maximum length: 300.
+  final String business_name;
+  ///The first and Last name of the recipient.
+  final Name name;
+  ///The address of the recipient.
+  final AddressPortable address;
+}
+class RecipientInfo{
+  RecipientInfo({
+    required this.billing_info,
+    required this.shipping_info,
+  });
+  final BillingInfo billing_info;
+  final ContactInformation shipping_info;
+}
+class Money{
+  Money({
+    required this.currency_code,
+    required this.value,
+  });
+  ///The three-character ISO-4217 currency code that identifies the currency.
+  final String value;
+  ///The value, which might be:
+  ///An integer for currencies like JPY that are not typically fractional.
+  ///A decimal fraction for currencies like TND that are subdivided into thousandths.
+  ///For the required number of decimal places for a currency code, see Currency Codes.
+  ///Maximum length: 32.
+  final String currency_code;
+}
+class Tax{
+  Tax({
+    required this.name,
+    required this.amount,
+    required this.percent,
+  });
+  ///The name of the tax applied on the invoice items.
+  ///Maximum length: 100.
+  final String name;
+  ///The tax rate. Value is from 0 to 100. Supports up to five decimal places.
+  ///Pattern: ^((-?[0-9]+)|(-?([0-9]+)?[.][0-9]+))$.
+  final String percent;
+  ///The calculated tax amount. The tax amount is added to the item total.
+  final Money amount;
+}
+class Discount{
+  Discount({
+    required this.amount,
+    required this.percent,
+  });
+  ///The discount as a percentage value. Value is from 0 to 100. Supports up to five decimal places.
+  final String percent;
+  ///The invoice level discount amount. Value is from 0 to 1000000. Supports up to two decimal places.
+  final Money amount;
+}
+class InvoiceLineItem{
+  InvoiceLineItem({
+    required this.id,
+    required this.name,
+    required this.description,
+    required this.quantity,
+    required this.unit_amount,
+    required this.unit_of_measure,
+    required this.discount,
+    required this.item_date,
+    required this.tax,
+  });
+  ///The ID of the invoice line item.
+  ///Read only.
+  ///Maximum length: 22.
+  final String id;
+  ///The item name for the invoice line item.
+  ///Maximum length: 200.
+  final String name;
+  ///The item description for the invoice line item.
+  final String description;
+  ///The quantity of the item that the invoicer provides to the payer. Value is from -1000000 to 1000000. Supports up to five decimal places.
+  ///Maximum length: 14.
+  final String quantity;
+  ///The unit price of the item. This does not include tax and discount. Value is from -1000000 to 1000000. Supports up to two decimal places.
+  final Money unit_amount;
+  ///The tax associated with the item. The tax amount is added to the item total. Value is from 0 to 100. Supports up to five decimal places.
+  final Tax tax;
+  ///The date when the item or service was provided, in Internet date and time format. For example, yyyy-MM-ddTz.
+  final String item_date;
+  ///Discount as a percent or amount at invoice level. The invoice discount amount is subtracted from the item total.
+  final Discount discount;
+  ///The unit of measure for the invoiced item. For AMOUNT the unit_amount and quantity are not shown on the invoice.
+  final UnitOfMeasure unit_of_measure;
+}
+class PartialPayment{
+  PartialPayment({
+    required this.allow_partial_payment,
+    required this.minimum_amount_due,
+  });
+  ///Indicates whether the invoice allows a partial payment. If false, the invoice must be paid in full. If true, the invoice allows partial payments.
+  final bool allow_partial_payment;
+  ///The minimum amount allowed for a partial payment. Valid only when allow_partial_payment is true.
+  final Money minimum_amount_due;
+}
+class Configuration{
+  Configuration({
+    required this.allow_tip,
+    required this.partial_payment,
+    required this.tax_calculated_after_discount,
+     required this.tax_inclusive,
+  });
+  ///Indicates whether the tax is calculated before or after a discount. If false, the tax is calculated before a discount. If true, the tax is calculated after a discount.
+  final bool tax_calculated_after_discount;
+  ///Indicates whether the unit price includes tax.
+  final bool tax_inclusive;
+  ///Indicates whether the invoice enables the customer to enter a tip amount during payment. If true, the invoice shows a tip amount field so that the customer can enter a tip amount. If false, the invoice does not show a tip amount field.
+  final bool allow_tip;
+  ///The partial payment details. Includes the minimum amount that the invoicer wants the payer to pay.
+  final PartialPayment partial_payment;
+}
+//https://developer.paypal.com/docs/api/invoicing/v2/#definition-payment_detail
+class PaymentDetail{
+  PaymentDetail({
+    required this.type,
+    required this.method,
+    required this.payment_date, 
+    required this.payment_id,
+    required this.amount, 
+    required this.note,
+    required this.shipping_info,
+  });
+  final PaymentDetailType type;
+  final String payment_id;
+  final String payment_date;
+  final PaymentDetailMethod method;
+  final String note;
+  final Money amount;
+  final ContactInformation shipping_info;
+}
+class RefundDetail{
+  RefundDetail({
+    required this.type,
+    required this.method,
+    required this.refund_date,
+    required this.refund_id,
+    required this.amount, 
+    required this.note,
+  });
+  final RefundDetailType type;
+  final String refund_id;
+  final String refund_date;
+  final PaymentDetailMethod method;
+  final String note;
+  final Money amount;
+}
+//https://developer.paypal.com/docs/api/invoicing/v2/#definition-payment_detail
+class Payment{
+  Payment({
+    required this.paid_amount,
+    required this.transactions,
+  });
+  final Money paid_amount;
+  final List<PaymentDetail> transactions;
+}
+class Refund{
+  Refund({
+    required this.refund_amount,
+    required this.transactions,
+  });
+  final Money refund_amount;
+  final RefundDetail transactions;
+}
+//TODO: Complete this
+class PayPalInvoice{
+  PayPalInvoice({
+    required this.id,
+    required this.status,
+    required this.parent_id,
+    required this.detail,
+    required this.additional_recipients,
+    required this.amount,
+    required this.configuration,
+    required this.due_amount,
+    required this.gratuity,
+    required this.invoicer,
+    required this.items,
+    required this.links,
+    required this.payments,
+    required this.primary_recipients,
+    required this.refunds,
+  });
+  ///The ID of the invoice.
+  final String id;
+  ///The status of the invoice.
+  final String status;
+  ///The parent ID to an invoice that defines the group invoice to which the invoice is related.
+  final String parent_id;
+  ///The details of the invoice. Includes the invoice number, date, payment terms, and audit metadata.
+  final InvoiceDetails detail;
+  ///The invoicer information. Includes the business name, email, address, phone, fax, tax ID, additional notes, and logo URL.
+  final Invoicer invoicer;
+  ///array (contains the recipient_info object)
+  ///The billing and shipping information. Includes name, email, address, phone and language.
+  final List<RecipientInfo> primary_recipients;
+  ///array (contains the email_address object)
+  ///An array of one or more CC: emails to which notifications are sent. If you omit this parameter, a notification is sent to all CC: email addresses that are part of the invoice.
+  final List<String> additional_recipients;
+  ///array (contains the item object)
+  ///An array of invoice line item information.
+  final List<InvoiceLineItem> items;
+  ///The invoice configuration details. Includes partial payment, tip, and tax calculated after discount.
+  final Configuration configuration;
+  ///object
+  ///The invoice amount summary of item total, discount, tax total and shipping..
+  final Money amount;
+  ///object
+  ///The due amount, which is the balance amount outstanding after payments.
+  final Money due_amount;
+  ///object
+  ///The amount paid by the payer as gratuity to the invoicer.
+  final Money gratuity;
+  ///object
+  ///List of payments registered against the invoice..
+  final List<Payment> payments;
+  ///TODO:List of refunds against this invoice. The invoicing refund details includes refund type, date, amount, and method.
+  ///https://developer.paypal.com/docs/api/invoicing/v2/#definition-refunds
+  final List<Refund> refunds;
+  final List<HATEOASLink> links;
+}
+class ListOfInvoices{
+  ListOfInvoices({
+    required this.total_items,
+    required this.total_pages,
+    required this.items,
+  });
+  final int total_items;
+  final int total_pages;
+  final List<PayPalInvoice> items;
+}
 //enums
 //----------------------------------------------------------------------
+enum PaymentDetailMethod{
+  ///Payments can be received through bank transfers.
+  BANK_TRANSFER,
+  ///Payments can be received as cash
+  CASH,
+  ///Payments can be received as check
+  CHECK,
+  ///Payments can be received through credit card payments.
+  CREDIT_CARD,
+  ///Payments can be received through debit card payments.
+  DEBIT_CARD,
+  ///Payments can be received through paypal payments.
+  PAYPAL,
+  ///Payments can be received through wire transfer.
+  WIRE_TRANSFER,
+  ///Payments can be received through other modes.
+  OTHER,
+}
+enum RefundDetailType{
+  PAYPAL,
+  EXTERNAL,
+}
+enum PaymentDetailType{
+  PAYPAL,
+  EXTERNAL,
+}
+enum UnitOfMeasure{
+  QUANTITY,
+  HOURS,
+  AMOUNT,
+}
 enum SetupFeeFailureAction{
   ///Continues the subscription if the initial payment for the setup fails.
   CONTINUE,
@@ -311,6 +772,13 @@ enum ProductType{
   DIGITAL,
   ///A service. For example, technical support.
   SERVICE,
+}
+enum PhoneType{
+  FAX,
+  HOME,
+  MOBILE,
+  OTHER,
+  PAGER,
 }
 class ProductCatogory{
   static const String PHYSICAL = "PHYSICAL";
@@ -743,6 +1211,20 @@ static const String replace = "replace";
 static const String copy = "copy";
 static const String test = "test";
 }
+class InvoiceStatus{
+  static const String draft = "DRAFT";
+  static const String sent = "SENT";
+  static const String scheduled = "SCHEDULED";
+  static const String paid = "PAID";
+  static const String markedAsPaid = "MARKED_AS_PAID";
+  static const String canceled = "CANCELLED";
+  static const String refunded = "REFUNDED";
+  static const String partiallyPaid = "PARTIALLY_PAID";
+  static const String partiallyRefunded = "PARTIALLY_REFUNDED";
+  static const String markedAsRefunded = "MARKED_AS_REFUNDED";
+  static const String unpaid = "UNPAID";
+  static const String paymentPending = "PAYMENT_PENDING";
+}
 //Generic Functions
 //----------------------------------------------------------------------
 Map<String,dynamic> _parseResponse(String json){
@@ -814,8 +1296,9 @@ class PayPal{
     return accessToken;
   }
   //Catalog Products API
+  //----------------------------------------------------------------------------------------
   //Get products https://developer.paypal.com/docs/api/catalog-products/v1/
-  Future<PayPalProductsList> listProducts({
+  Future<HATEOASLink> listProducts({
     ///The number of items to return in the response.
     ///Minimum value: 1.
     ///Maximum value: 20.
@@ -842,7 +1325,7 @@ class PayPal{
       },
     );
     try{
-      return PayPalProductsList.parse(_parseResponse(response));
+      return HATEOASLink.parse(_parseResponse(response));
     }catch(error){
       throw response;
     }
@@ -949,7 +1432,8 @@ class PayPal{
       throw response;
     }
   }
-  //TODO: Subscriptions API
+  //Subscriptions API
+  //--------------------------------------------------------------------------------------------
   //https://developer.paypal.com/docs/api/subscriptions/v1/
   Future<ListOfPayPalPlans> listPlans({
     ///Filters the response by a Product ID. Minimum length: 6. Maximum length: 50.
@@ -1154,7 +1638,7 @@ class PayPal{
       throw response;
     }
   }
-  //TODO: Activate plan
+  //Activate plan
   Future<void> activatePlan({
     required String id,
   })async{
@@ -1173,7 +1657,7 @@ class PayPal{
       throw response;
     }
   }
-  //TODO: Deactivate plan
+  //Deactivate plan
   Future<void> deactivatePlan({
     required String id,
   })async{
@@ -1192,4 +1676,76 @@ class PayPal{
       throw response;
     }
   }
+  //Invoice
+  //-------------------------------------------------------------------------
+  //Generate invoice number
+  Future<String> generateInvoiceNumber({
+    ///The invoice number. If you omit this value, the default is the auto-incremented number from the last number.
+    ///Maximum length: 25.
+    required String invoice_number,
+  })async{
+    Map<String,dynamic> parameters = {
+      "invoice_number" : invoice_number,
+    };
+    String response = await SexyAPI(
+      url: _url,
+      path: "/v2/invoicing/generate-next-invoice-number",
+      parameters: {},
+    ).post(
+      headers: {
+        "Authorization" : "Bearer ${accessToken.access_token}",
+        "Content-Type" : "application/json",
+      },
+      body: jsonEncode(parameters),
+    );
+    try{
+      Map<String,dynamic> parsedJSON = await _parseResponse(response);
+      String invoice_number = parsedJSON["invoice_number"];
+      return invoice_number;
+    }catch(err){
+      throw response;
+    }
+  }
+  //TODO:List invoices
+  Future<ListOfInvoices> listInvoices()async{
+    String response = await SexyAPI(
+      url: _url,
+      parameters: {},
+      path: "/v2/invoicing/invoices",
+    ).get(
+      headers: {
+        "Authorization" : "Bearer ${accessToken.access_token}",
+        "Content-Type" : "application/json",
+      },
+    );
+
+    try{
+      Map<String,dynamic> parsedJSON = jsonDecode(response);
+      List<PayPalInvoice> invoices = [];
+      for(Map<String,dynamic> invoice in parsedJSON["items"]){
+        invoices.add(PayPalInvoice(
+          
+        ));
+      }
+      return ListOfInvoices(
+        total_items: parsedJSON["total_items"] ?? 0, 
+        total_pages: parsedJSON["total_pages"] ?? 0, 
+        items: invoices,
+      );
+    }catch(err){
+      throw response;
+    }
+  }
+  //TODO: Delete invoice
+  //TODO: Fully update invoice
+  //TODO: Show invoice details
+  //TODO: Cancel sent invoice
+  //TODO: Generate QR code
+  //TODO: Record payment for invoice
+  //TODO: Delete external payment
+  //TODO: Record refund for invoice
+  //TODO: Delete external refund
+  //TODO: Send invoice reminder
+  //TODO: Send invoice
+  //TODO: Search invoices
 }
